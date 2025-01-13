@@ -2649,9 +2649,7 @@ function init() {
       li.innerHTML = `
         <div class="item-details">
           <div class="item-name">${item.name}</div>
-          <div class="item-info">
-            <span class="item-quantity">${item.quantity} units</span>
-          </div>
+          <span class="item-quantity">${item.quantity} units</span>
         </div>
       `;
       

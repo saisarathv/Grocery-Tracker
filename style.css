@@ -3711,8 +3711,6 @@ h2 {
 #completed-list li,
 #wasted-list li {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   padding: 12px 15px;
   border: 1px solid #e0e0e0;
   border-radius: 12px;
@@ -3734,7 +3732,7 @@ h2 {
 #wasted-list .item-details {
   display: flex;
   align-items: center;
-  gap: 15px;
+  justify-content: space-between;
   width: 100%;
 }
 
@@ -3752,6 +3750,7 @@ h2 {
   border-radius: 15px;
   font-size: 0.9rem;
   color: #1a237e;
+  margin-left: auto;
 }
 
 /* Dark mode support */
