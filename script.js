@@ -66,10 +66,12 @@ function init() {
       const localItems = getItemsFromStorage();
       const localReceipts = getReceipts();
       const localBudget = localStorage.getItem('monthlyBudget') || '0';
+      const localHistoryItems = getHistoryItems();
       
       console.log('Local data:', {
         itemsCount: localItems.length,
         receiptsCount: localReceipts.length,
+        historyItemsCount: localHistoryItems.length,
         budget: localBudget
       });
       
@@ -78,17 +80,20 @@ function init() {
           // Merge data with server's data
           const mergedItems = mergeData(localItems, serverData.items || []);
           const mergedReceipts = mergeData(localReceipts, serverData.receipts || []);
+          const mergedHistoryItems = mergeData(localHistoryItems, serverData.historyItems || []);
           const mergedBudget = serverData.monthlyBudget || localBudget;
           
           // Update local storage with merged data
           localStorage.setItem('items', JSON.stringify(mergedItems));
           localStorage.setItem('receipts', JSON.stringify(mergedReceipts));
+          localStorage.setItem('historyItems', JSON.stringify(mergedHistoryItems));
           localStorage.setItem('monthlyBudget', mergedBudget);
           
           // Update server with merged data
           await setDoc(userDoc, {
             items: mergedItems,
             receipts: mergedReceipts,
+            historyItems: mergedHistoryItems,
             monthlyBudget: mergedBudget,
             lastUpdated: Date.now(),
             userId: currentUser.uid
@@ -100,6 +105,7 @@ function init() {
           await setDoc(userDoc, {
             items: localItems,
             receipts: localReceipts,
+            historyItems: localHistoryItems,
             monthlyBudget: localBudget,
             lastUpdated: Date.now(),
             userId: currentUser.uid
@@ -108,9 +114,10 @@ function init() {
           console.log('Initial data push completed');
         }
         
-        // Refresh the display
+        // Refresh all displays
         displayItems();
         displayReceipts();
+        displayHistoryItems();
         updateBudgetStats();
         
       } catch (writeError) {
@@ -119,26 +126,8 @@ function init() {
       }
       
     } catch (error) {
-      console.error('Detailed sync error:', error);
-      
-      // More specific error messages
-      let errorMessage = 'Error syncing data. Will retry when connection improves.';
-      if (error.code === 'permission-denied') {
-        errorMessage = 'Permission denied. Please sign out and sign in again.';
-      } else if (error.code === 'unavailable') {
-        errorMessage = 'Server is currently unavailable. Working in offline mode.';
-      } else if (error.code === 'unauthenticated') {
-        errorMessage = 'Authentication expired. Please sign in again.';
-        // Force sign out if authentication expired
-        await handleSignOut();
-      }
-      
-      await showCustomDialog(errorMessage, 'alert');
-      
-      // Continue with local data
-      displayItems();
-      displayReceipts();
-      updateBudgetStats();
+      console.error('Error during sync:', error);
+      throw error;
     }
   }
 
@@ -2427,43 +2416,23 @@ function init() {
     
     // Create history item with timestamp
     const historyItem = {
+        id: Date.now().toString(),
         name: itemName,
         quantity: itemQuantity,
         expiry: itemExpiry,
         movedDate: new Date().toISOString(),
-        type: historyType
+        type: historyType,
+        timestamp: Date.now()
     };
     
     // Get existing history items
-    let historyItems = JSON.parse(localStorage.getItem('historyItems') || '[]');
+    let historyItems = getHistoryItems();
     historyItems.push(historyItem);
     localStorage.setItem('historyItems', JSON.stringify(historyItems));
     
     // Remove item from current list
     await removeItemFromStorage(itemName);
     item.remove();
-    
-    // Add to appropriate history list
-    const targetList = document.getElementById(`${historyType}-list`);
-    const historyLi = document.createElement('li');
-    historyLi.innerHTML = `
-        <div class="item-details">
-            <div class="item-name">${itemName}</div>
-            <div class="item-info">
-                <span class="item-quantity">${itemQuantity} units</span>
-                <span class="history-date">Moved on: ${new Date().toLocaleDateString()}</span>
-            </div>
-        </div>
-        <div class="item-actions">
-            <button class="remove-item btn-link text-red">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-    `;
-    
-    targetList.appendChild(historyLi);
-    checkUI();
-    updateBudgetStats();
     
     // Sync with Firebase if user is logged in
     if (currentUser) {
@@ -2481,5 +2450,88 @@ function init() {
             await showCustomDialog('Error syncing history. Please try again.', 'alert');
         }
     }
+    
+    displayHistoryItems();
+    checkUI();
+    updateBudgetStats();
+  }
+
+  // Add function to remove history items
+  async function removeHistoryItem(itemName, type) {
+    const confirmed = await showCustomDialog('Are you sure you want to remove this item from history?');
+    if (confirmed) {
+      let historyItems = getHistoryItems();
+      historyItems = historyItems.filter(item => !(item.name === itemName && item.type === type));
+      localStorage.setItem('historyItems', JSON.stringify(historyItems));
+      
+      if (currentUser) {
+        try {
+          const userDoc = doc(db, 'users', currentUser.uid);
+          await setDoc(userDoc, {
+            items: getItemsFromStorage(),
+            receipts: getReceipts(),
+            historyItems: historyItems,
+            monthlyBudget: localStorage.getItem('monthlyBudget') || '0',
+            lastUpdated: Date.now()
+          });
+        } catch (error) {
+          console.error('Error syncing history deletion:', error);
+          await showCustomDialog('Error syncing history deletion. Please try again.', 'alert');
+        }
+      }
+      
+      displayHistoryItems();
+      checkUI();
+    }
+  }
+
+  // Add these functions to handle history items
+  function getHistoryItems() {
+    return localStorage.getItem('historyItems') ? JSON.parse(localStorage.getItem('historyItems')) : [];
+  }
+
+  function displayHistoryItems() {
+    const historyItems = getHistoryItems();
+    const completedList = document.getElementById('completed-list');
+    const wastedList = document.getElementById('wasted-list');
+    
+    // Clear existing lists
+    completedList.innerHTML = '';
+    wastedList.innerHTML = '';
+    
+    historyItems.forEach(item => {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <div class="item-details">
+          <div class="item-name">${item.name}</div>
+          <div class="item-info">
+            <span class="item-quantity">${item.quantity} units</span>
+            ${item.expiry ? `<span class="item-expiry">Expiry: ${item.expiry}</span>` : ''}
+            <span class="history-date">Moved on: ${new Date(item.movedDate).toLocaleDateString()}</span>
+          </div>
+        </div>
+        <div class="item-actions">
+          <button class="remove-item btn-link text-red" onclick="removeHistoryItem('${item.name}', '${item.type}')">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      `;
+      
+      if (item.type === 'completed') {
+        completedList.appendChild(li);
+      } else if (item.type === 'wasted') {
+        wastedList.appendChild(li);
+      }
+    });
+  }
+
+  // Update the init function to include history display
+  function init() {
+    // ... existing init code ...
+    
+    // Add this line to display history items on load
+    displayHistoryItems();
+    
+    // ... rest of init code ...
   }
 }
