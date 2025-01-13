@@ -2648,7 +2648,8 @@ function init() {
     const currencySymbol = getCurrencySymbol(currency);
     
     // Generate CSV content
-    let csvContent = 'Smart Grocery Manager - Monthly Report\n';
+    let csvContent = '\ufeff'; // Add BOM for Excel compatibility
+    csvContent += 'Smart Grocery Manager - Monthly Report\n';
     csvContent += `Month: ${currentDate.toLocaleString('default', { month: 'long' })} ${currentYear}\n\n`;
     csvContent += `Monthly Budget: ${currencySymbol}${budget.toFixed(2)}\n\n`;
     
@@ -2656,7 +2657,7 @@ function init() {
     csvContent += 'CURRENT ITEMS IN STOCK\n';
     csvContent += 'Name,Quantity,Expiry Date,Status\n';
     monthlyData.current.forEach(item => {
-      csvContent += `${item.name},${item.quantity},${item.expiry || 'N/A'},In Stock\n`;
+      csvContent += `"${item.name}",${item.quantity},"${item.expiry || 'N/A'}","In Stock"\n`;
     });
     
     // Shopping List
@@ -2664,28 +2665,28 @@ function init() {
     csvContent += 'Name,Quantity,Estimated Price,Total\n';
     monthlyData.shopping.forEach(item => {
       const total = item.isUnknownPrice ? 'Unknown' : `${currencySymbol}${(item.price * item.quantity).toFixed(2)}`;
-      csvContent += `${item.name},${item.quantity},${item.isUnknownPrice ? 'Unknown' : `${currencySymbol}${item.price}`},${total}\n`;
+      csvContent += `"${item.name}",${item.quantity},"${item.isUnknownPrice ? 'Unknown' : `${currencySymbol}${item.price}`}","${total}"\n`;
     });
     
     // Completed Items
     csvContent += '\nCOMPLETED ITEMS\n';
     csvContent += 'Name,Quantity,Date Completed\n';
     monthlyData.completed.forEach(item => {
-      csvContent += `${item.name},${item.quantity},${new Date(item.movedDate).toLocaleDateString()}\n`;
+      csvContent += `"${item.name}",${item.quantity},"${new Date(item.movedDate).toLocaleDateString()}"\n`;
     });
     
     // Wasted Items
     csvContent += '\nWASTED ITEMS\n';
     csvContent += 'Name,Quantity,Date Wasted\n';
     monthlyData.wasted.forEach(item => {
-      csvContent += `${item.name},${item.quantity},${new Date(item.movedDate).toLocaleDateString()}\n`;
+      csvContent += `"${item.name}",${item.quantity},"${new Date(item.movedDate).toLocaleDateString()}"\n`;
     });
     
     // Receipts
     csvContent += '\nRECEIPTS\n';
     csvContent += 'Description,Date,Amount\n';
     monthlyData.receipts.forEach(receipt => {
-      csvContent += `${receipt.name},${new Date(receipt.date).toLocaleDateString()},${currencySymbol}${receipt.amount}\n`;
+      csvContent += `"${receipt.name}","${new Date(receipt.date).toLocaleDateString()}","${currencySymbol}${receipt.amount}"\n`;
     });
     
     // Summary
@@ -2718,11 +2719,15 @@ function init() {
       }
     } catch (error) {
       console.error('Error downloading report:', error);
-      showCustomDialog('Error generating report. Please try again.', 'alert');
+      if (window.showCustomDialog) {
+        window.showCustomDialog('Error generating report. Please try again.', 'alert');
+      } else {
+        alert('Error generating report. Please try again.');
+      }
     }
   };
 
-  // Add this at the top level of your script, outside any function
+  // Add event listener for the download button
   document.addEventListener('DOMContentLoaded', function() {
     const downloadBtn = document.getElementById('download-monthly-data');
     if (downloadBtn) {
