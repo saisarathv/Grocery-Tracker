@@ -2656,20 +2656,17 @@ function init() {
     
     historyItems.forEach(item => {
         const li = document.createElement('li');
+        li.className = 'history-item'; // Add class for specific styling
         
         li.innerHTML = `
             <div class="item-details">
                 <div class="item-name">${item.name}</div>
-                <div class="item-info">
-                    <span class="item-quantity">${item.quantity} units</span>
-                    <span class="history-date">Moved on: ${new Date(item.movedDate).toLocaleDateString()}</span>
-                </div>
+                <span class="item-quantity">${item.quantity} units</span>
+                <div class="move-date">Moved on: ${new Date(item.movedDate).toLocaleDateString()}</div>
             </div>
-            <div class="item-actions">
-                <button class="remove-item btn-link text-red" onclick="removeHistoryItem('${item.name}', '${item.type}')">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
+            <button class="remove-item btn-link text-red" onclick="removeHistoryItem('${item.name}', '${item.type}')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         `;
         
         if (item.type === 'completed' && completedList) {

@@ -3753,3 +3753,111 @@ h2 {
     justify-content: center;
   }
 }
+
+/* History items specific styles */
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: white;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.history-item .item-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+
+.history-item .item-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1a237e;
+}
+
+.history-item .item-quantity {
+    display: inline-block;
+    background: #e8eaf6;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    color: #1a237e;
+    align-self: flex-start;
+}
+
+.history-item .move-date {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.history-item .remove-item {
+    color: #ef5350;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 10px;
+}
+
+/* Add different border colors for completed and wasted items */
+#completed-list .history-item {
+    border-left: 4px solid #4caf50;
+}
+
+#wasted-list .history-item {
+    border-left: 4px solid #ef5350;
+}
+
+/* Dark mode support */
+.dark-mode .history-item {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.dark-mode .history-item .item-name {
+    color: #7986cb;
+}
+
+.dark-mode .history-item .item-quantity {
+    background: rgba(121, 134, 203, 0.1);
+    color: #7986cb;
+}
+
+.dark-mode .history-item .move-date {
+    color: #aaa;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .history-item {
+        padding: 12px;
+    }
+
+    .history-item .item-name {
+        font-size: 1rem;
+        margin-bottom: 4px;
+    }
+
+    .history-item .item-quantity {
+        font-size: 0.85rem;
+        padding: 3px 10px;
+    }
+
+    .history-item .move-date {
+        font-size: 0.85rem;
+    }
+
+    .history-item .remove-item {
+        width: 28px;
+        height: 28px;
+    }
+}
