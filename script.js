@@ -2594,8 +2594,22 @@ function init() {
     });
   });
 
-  // Move these functions outside of init()
-  function generateMonthlyReport() {
+  // Add these functions at the very top of your script.js file, outside of any other function
+  function getCurrencySymbol(currency) {
+    const symbols = {
+      USD: '$',
+      EUR: '€',
+      GBP: '£',
+      INR: '₹',
+      JPY: '¥',
+      AUD: 'A$',
+      CAD: 'C$'
+    };
+    return symbols[currency] || currency;
+  }
+
+  // Global function to generate monthly report
+  window.generateMonthlyReport = function() {
     const currentDate = new Date();
     const currentMonth = currentDate.getMonth();
     const currentYear = currentDate.getFullYear();
@@ -2682,36 +2696,37 @@ function init() {
     csvContent += `Remaining Budget,${currencySymbol}${(budget - totalSpent).toFixed(2)}\n`;
     
     return csvContent;
-  }
+  };
 
-  function downloadMonthlyReport() {
+  // Global function to download monthly report
+  window.downloadMonthlyReport = function() {
     try {
-    const csvContent = generateMonthlyReport();
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const currentDate = new Date();
-    const fileName = `grocery-report-${currentDate.toLocaleString('default', { month: 'long' })}-${currentDate.getFullYear()}.csv`;
-    
-    if (navigator.msSaveBlob) { // IE 10+
-      navigator.msSaveBlob(blob, fileName);
-    } else {
-      link.href = URL.createObjectURL(blob);
-      link.setAttribute('download', fileName);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
+      const csvContent = window.generateMonthlyReport();
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const currentDate = new Date();
+      const fileName = `grocery-report-${currentDate.toLocaleString('default', { month: 'long' })}-${currentDate.getFullYear()}.csv`;
+      
+      if (navigator.msSaveBlob) { // IE 10+
+        navigator.msSaveBlob(blob, fileName);
+      } else {
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
     } catch (error) {
       console.error('Error downloading report:', error);
       showCustomDialog('Error generating report. Please try again.', 'alert');
     }
-  }
+  };
 
-  // Add this with your other DOMContentLoaded event listeners
-  document.addEventListener('DOMContentLoaded', () => {
+  // Add this at the top level of your script, outside any function
+  document.addEventListener('DOMContentLoaded', function() {
     const downloadBtn = document.getElementById('download-monthly-data');
     if (downloadBtn) {
-      downloadBtn.addEventListener('click', downloadMonthlyReport);
+      downloadBtn.addEventListener('click', window.downloadMonthlyReport);
     }
   });
 }
