@@ -2593,4 +2593,122 @@ function init() {
       }
     });
   });
+
+  // Add these functions to handle data download
+  function generateMonthlyReport() {
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+    
+    // Get all data
+    const items = getItemsFromStorage();
+    const historyItems = getHistoryItems();
+    const receipts = getReceipts();
+    
+    // Filter for current month
+    const monthlyData = {
+      current: items.filter(item => item.status === 'current'),
+      shopping: items.filter(item => item.status === 'need'),
+      completed: historyItems.filter(item => {
+        const itemDate = new Date(item.movedDate);
+        return item.type === 'completed' && 
+               itemDate.getMonth() === currentMonth && 
+               itemDate.getFullYear() === currentYear;
+      }),
+      wasted: historyItems.filter(item => {
+        const itemDate = new Date(item.movedDate);
+        return item.type === 'wasted' && 
+               itemDate.getMonth() === currentMonth && 
+               itemDate.getFullYear() === currentYear;
+      }),
+      receipts: receipts.filter(receipt => {
+        const receiptDate = new Date(receipt.date);
+        return receiptDate.getMonth() === currentMonth && 
+               receiptDate.getFullYear() === currentYear;
+      })
+    };
+    
+    // Get budget information
+    const budget = parseFloat(localStorage.getItem('monthlyBudget')) || 0;
+    const currency = localStorage.getItem('selectedCurrency') || 'USD';
+    const currencySymbol = getCurrencySymbol(currency);
+    
+    // Generate CSV content
+    let csvContent = 'Smart Grocery Manager - Monthly Report\n';
+    csvContent += `Month: ${currentDate.toLocaleString('default', { month: 'long' })} ${currentYear}\n\n`;
+    csvContent += `Monthly Budget: ${currencySymbol}${budget.toFixed(2)}\n\n`;
+    
+    // Current Items
+    csvContent += 'CURRENT ITEMS IN STOCK\n';
+    csvContent += 'Name,Quantity,Expiry Date,Status\n';
+    monthlyData.current.forEach(item => {
+      csvContent += `${item.name},${item.quantity},${item.expiry || 'N/A'},In Stock\n`;
+    });
+    
+    // Shopping List
+    csvContent += '\nSHOPPING LIST\n';
+    csvContent += 'Name,Quantity,Estimated Price,Total\n';
+    monthlyData.shopping.forEach(item => {
+      const total = item.isUnknownPrice ? 'Unknown' : `${currencySymbol}${(item.price * item.quantity).toFixed(2)}`;
+      csvContent += `${item.name},${item.quantity},${item.isUnknownPrice ? 'Unknown' : `${currencySymbol}${item.price}`},${total}\n`;
+    });
+    
+    // Completed Items
+    csvContent += '\nCOMPLETED ITEMS\n';
+    csvContent += 'Name,Quantity,Date Completed\n';
+    monthlyData.completed.forEach(item => {
+      csvContent += `${item.name},${item.quantity},${new Date(item.movedDate).toLocaleDateString()}\n`;
+    });
+    
+    // Wasted Items
+    csvContent += '\nWASTED ITEMS\n';
+    csvContent += 'Name,Quantity,Date Wasted\n';
+    monthlyData.wasted.forEach(item => {
+      csvContent += `${item.name},${item.quantity},${new Date(item.movedDate).toLocaleDateString()}\n`;
+    });
+    
+    // Receipts
+    csvContent += '\nRECEIPTS\n';
+    csvContent += 'Description,Date,Amount\n';
+    monthlyData.receipts.forEach(receipt => {
+      csvContent += `${receipt.name},${new Date(receipt.date).toLocaleDateString()},${currencySymbol}${receipt.amount}\n`;
+    });
+    
+    // Summary
+    const totalSpent = monthlyData.receipts.reduce((sum, receipt) => sum + parseFloat(receipt.amount), 0);
+    csvContent += '\nMONTHLY SUMMARY\n';
+    csvContent += `Total Budget,${currencySymbol}${budget.toFixed(2)}\n`;
+    csvContent += `Total Spent,${currencySymbol}${totalSpent.toFixed(2)}\n`;
+    csvContent += `Remaining Budget,${currencySymbol}${(budget - totalSpent).toFixed(2)}\n`;
+    
+    return csvContent;
+  }
+
+  function downloadMonthlyReport() {
+    const csvContent = generateMonthlyReport();
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const currentDate = new Date();
+    const fileName = `grocery-report-${currentDate.toLocaleString('default', { month: 'long' })}-${currentDate.getFullYear()}.csv`;
+    
+    if (navigator.msSaveBlob) { // IE 10+
+      navigator.msSaveBlob(blob, fileName);
+    } else {
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  }
+
+  // Add this to your init function or event listeners section
+  document.getElementById('download-monthly-data').addEventListener('click', () => {
+    try {
+      downloadMonthlyReport();
+    } catch (error) {
+      console.error('Error downloading report:', error);
+      showCustomDialog('Error generating report. Please try again.', 'alert');
+    }
+  });
 }

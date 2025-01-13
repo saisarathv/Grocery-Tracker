@@ -3663,3 +3663,46 @@ h2 {
         padding: 3px 6px;
     }
 }
+
+.download-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #4caf50;
+  margin-left: auto;
+}
+
+.download-btn:hover {
+  background-color: #45a049;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 10px 0;
+  border-bottom: 2px solid #f0f2f5;
+}
+
+/* Dark mode support */
+.dark-mode .download-btn {
+  background-color: #66bb6a;
+}
+
+.dark-mode .download-btn:hover {
+  background-color: #81c784;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .section-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .download-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
