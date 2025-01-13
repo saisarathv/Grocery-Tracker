@@ -1135,522 +1135,6 @@ h2 {
 @media (max-width: 768px) {
   .form-control {
     flex-direction: column;
-    gap: 15px;
-  }
-
-  .form-input,
-  #item-input,
-  #quantity-input,
-  #status-input,
-  .date-container,
-  .price-container {
-    width: 100%;
-    margin-top: 0;
-  }
-
-  #expiry-input,
-  #price-input {
-    width: 100%;
-  }
-}
-
-/* Form control alignment */
-.form-control {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 20px;
-  align-items: center;
-}
-
-/* All input fields - consistent sizing */
-.form-input,
-#item-input,
-#quantity-input,
-#status-input,
-#price-input,
-#expiry-input {
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 1rem;
-  height: 45px;
-  width: 250px;
-  box-sizing: border-box;
-  margin: 0;
-}
-
-/* Date container */
-.date-container {
-  width: 250px;
-  height: 45px;
-  position: relative;
-  margin: 0;
-}
-
-#expiry-input {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-}
-
-/* No expiry checkbox */
-.no-expiry {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin-top: 5px;
-  font-size: 0.9rem;
-  white-space: nowrap;
-}
-
-/* Price container - similar structure */
-.price-container {
-  width: 250px;
-  height: 45px;
-  position: relative;
-  margin: 0;
-}
-
-#price-input {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-}
-
-/* Unknown price checkbox */
-.unknown-price {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin-top: 5px;
-  font-size: 0.9rem;
-  white-space: nowrap;
-}
-
-/* Add these styles */
-.name-and-expiry {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.no-expiry-text {
-    color: #666;
-    font-size: 0.9rem;
-    font-style: italic;
-}
-
-.item-details {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    width: calc(100% - 100px);
-    padding: 0 10px;
-    align-items: center;
-}
-
-.item-name {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #1a237e;
-    flex: 1 1 100%;
-    word-break: break-word;
-}
-
-@media (max-width: 768px) {
-    .items li {
-        padding: 15px;
-        position: relative;
-    }
-
-    .item-details {
-        width: calc(100% - 50px);
-        gap: 8px;
-        padding-right: 45px;
-    }
-
-    .item-name {
-        font-size: 1rem;
-        margin-bottom: 8px;
-        padding-right: 35px;
-    }
-
-    .item-actions {
-        position: absolute;
-        right: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        flex-direction: column;
-        gap: 5px;
-    }
-}
-
-/* Update the form control styles for better mobile layout */
-.form-control {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 20px;
-    align-items: flex-start;
-}
-
-/* Update date container styles */
-.date-container {
-    width: 100%;
-    height: auto;
-    position: relative;
-    margin-bottom: 30px;
-}
-
-#expiry-input {
-    position: relative;
-    width: 100%;
-}
-
-/* Update no expiry checkbox container */
-.no-expiry {
-    position: relative;
-    top: 5px;
-    left: 0;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    margin-top: 5px;
-    font-size: 0.9rem;
-    white-space: nowrap;
-}
-
-/* Update price container styles */
-.price-container {
-    width: 100%;
-    height: auto;
-    position: relative;
-    margin-bottom: 30px;
-    display: flex;
-    flex-direction: column;
-}
-
-#price-input {
-    position: static;
-    width: 100%;
-    margin-bottom: 5px;
-    display: block;
-}
-
-/* Update unknown price checkbox container */
-.unknown-price {
-    position: static;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    margin-top: 5px;
-    font-size: 0.9rem;
-    white-space: nowrap;
-}
-
-/* Mobile specific updates */
-@media (max-width: 768px) {
-    .form-control {
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .form-input,
-    #item-input,
-    #quantity-input,
-    #status-input,
-    .date-container,
-    .price-container {
-        width: 100%;
-    }
-
-    #expiry-input,
-    #price-input {
-        width: 100%;
-        position: relative;
-    }
-
-    .date-container,
-    .price-container {
-        margin-bottom: 35px;
-    }
-
-    /* Add spacing between form elements */
-    .form-control > * {
-        margin-bottom: 15px;
-    }
-
-    /* Ensure the submit button doesn't have extra margin */
-    .form-control > button {
-        margin-bottom: 0;
-    }
-}
-
-/* Update filter styles */
-.filter {
-    margin: 20px 0;
-    padding: 0 15px;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.filter input {
-    width: 100%;
-    padding: 12px 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 1rem;
-    height: 45px;
-    box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
-}
-
-.form-input-filter {
-    width: 100%;
-    padding: 12px 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 1rem;
-    height: 45px;
-    box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
-}
-
-/* Mobile specific updates for filter */
-@media (max-width: 768px) {
-    .filter {
-        padding: 0;
-        margin: 15px 0;
-    }
-
-    .filter input,
-    .form-input-filter {
-        width: 100%;
-        margin: 0;
-    }
-}
-
-/* Update header styles for mobile */
-@media (max-width: 768px) {
-    header {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        gap: 15px;
-    }
-
-    header h1 {
-        width: 100%;
-        text-align: center;
-        margin: 0;
-    }
-
-    .currency-selector {
-        width: 100%;
-        justify-content: center;
-        gap: 10px;
-    }
-}
-
-/* Update item details layout */
-.item-details {
-    display: flex;
-    flex-direction: row !important;
-    align-items: center;
-    gap: 15px;
-    width: calc(100% - 80px);
-    padding: 0 10px;
-    flex-wrap: wrap;
-}
-
-.item-name {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #1a237e;
-    min-width: 150px;
-    margin-right: auto;
-}
-
-.item-quantity {
-    background: #e8eaf6;
-    padding: 6px 12px;
-    border-radius: 15px;
-    font-size: 0.9rem;
-    color: #1a237e;
-    white-space: nowrap;
-    margin: 0;
-}
-
-.item-expiry,
-.item-price {
-    font-size: 0.9rem;
-    padding: 6px 12px;
-    border-radius: 15px;
-    white-space: nowrap;
-    margin: 0;
-}
-
-.item-expiry {
-    background: #fff3e0;
-    color: #666;
-}
-
-.item-price {
-    background: #e8f5e9;
-    color: #2e7d32;
-}
-
-.item-actions {
-    display: flex;
-    gap: 8px;
-    min-width: 90px;
-    justify-content: flex-end;
-    align-items: flex-start;
-    padding-right: 5px;
-}
-
-/* Mobile responsiveness for items */
-@media (max-width: 768px) {
-    .item-details {
-        flex-direction: column !important;
-        align-items: flex-start;
-        gap: 8px;
-        width: calc(100% - 60px);
-    }
-
-    .item-name {
-        margin-right: 0;
-        width: 100%;
-    }
-
-    .items li {
-        padding: 12px 15px;
-        position: relative;
-    }
-
-    .item-details {
-        display: grid !important;
-        grid-template-columns: 1fr auto !important;
-        grid-template-rows: auto auto;
-        gap: 8px;
-        width: calc(100% - 45px);
-        padding-right: 40px;
-    }
-
-    .item-name {
-        grid-column: 1 / -1;
-        font-size: 0.95rem;
-        width: 100%;
-        white-space: normal; /* Allow text to wrap */
-        overflow: visible;
-        text-overflow: clip;
-        margin-bottom: 4px;
-    }
-
-    .item-quantity {
-        font-size: 0.85rem;
-        padding: 4px 8px;
-        justify-self: start;
-    }
-
-    .item-expiry,
-    .item-price {
-        font-size: 0.85rem;
-        padding: 4px 8px;
-        width: auto;
-        max-width: 100%;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    /* Fix receipt header actions layout */
-    .receipt-header-actions {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        flex-wrap: wrap;
-    }
-
-    .section-header {
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-
-    /* Update section header for better mobile layout */
-    .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 15px;
-        padding: 10px 0;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-
-    .section-header h2 {
-        font-size: 1.3rem;
-        margin: 0;
-    }
-
-    /* Ensure View Receipts button doesn't overlap */
-    #show-receipts-btn {
-        font-size: 0.9rem;
-        padding: 8px 12px;
-        white-space: nowrap;
-        margin-right: 10px;
-    }
-
-    .btn-clear-section {
-        width: 35px;
-        height: 35px;
-        min-width: 35px;
-    }
-}
-
-/* Additional optimization for very small screens */
-@media (max-width: 360px) {
-    .section-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .receipt-header-actions {
-        width: 100%;
-        justify-content: space-between;
-    }
-
-    #show-receipts-btn {
-        font-size: 0.85rem;
-        padding: 6px 10px;
-    }
-
-    .item-details {
-        padding-right: 35px;
-    }
-
-    .item-name {
-        font-size: 0.9rem;
-    }
-
-    .item-quantity,
-    .item-expiry,
-    .item-price {
-        font-size: 0.8rem;
-        padding: 3px 6px;
-    }
-}
-
-/* Form control and input styles for mobile */
-@media (max-width: 768px) {
-  .form-control {
-    flex-direction: column;
     gap: 20px;
     margin-bottom: 25px;
     width: 100%;
@@ -2632,5 +2116,110 @@ h2 {
 
     .history-item .move-date {
         font-size: 0.8rem;
+    }
+}
+
+/* History items styling */
+#completed-list li, #wasted-list li {
+    position: relative;
+    background: white;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+#completed-list li {
+    border-left: 4px solid #4caf50;
+}
+
+#wasted-list li {
+    border-left: 4px solid #ef5350;
+}
+
+/* Item name styling */
+.item-name {
+    color: #1a237e;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+/* Quantity badge styling */
+.item-quantity {
+    display: inline-block;
+    background: #e8eaf6;
+    color: #1a237e;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+}
+
+/* Move date styling */
+.move-date {
+    color: #666;
+    font-size: 0.85rem;
+}
+
+/* Remove button styling */
+.remove-item {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    padding: 0;
+    color: #ef5350;
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Dark mode support */
+.dark-mode #completed-list li,
+.dark-mode #wasted-list li {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.dark-mode .item-name {
+    color: #7986cb;
+}
+
+.dark-mode .item-quantity {
+    background: rgba(121, 134, 203, 0.1);
+    color: #7986cb;
+}
+
+.dark-mode .move-date {
+    color: #aaa;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    #completed-list li,
+    #wasted-list li {
+        padding: 12px;
+    }
+
+    .item-name {
+        font-size: 0.95rem;
+        padding-right: 30px;
+    }
+
+    .item-quantity {
+        font-size: 0.85rem;
+        padding: 3px 10px;
+    }
+
+    .move-date {
+        font-size: 0.8rem;
+    }
+
+    .remove-item {
+        top: 12px;
+        right: 12px;
     }
 }

@@ -2658,16 +2658,12 @@ function init() {
         const li = document.createElement('li');
         
         li.innerHTML = `
-            <div class="item-details">
-                <div class="item-name">${item.name}</div>
-                <div class="item-quantity">${item.quantity} units</div>
-            </div>
+            <div class="item-name">${item.name}</div>
+            <div class="item-quantity">${item.quantity} units</div>
             <div class="move-date">Moved on: ${new Date(item.movedDate).toLocaleDateString()}</div>
-            <div class="item-actions">
-                <button class="remove-item btn-link" onclick="removeHistoryItem('${item.name}', '${item.type}')">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
+            <button class="remove-item" onclick="removeHistoryItem('${item.name}', '${item.type}')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         `;
         
         if (item.type === 'completed' && completedList) {
