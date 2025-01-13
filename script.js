@@ -643,12 +643,16 @@ function init() {
     if (currentUser) {
       try {
         const userDoc = doc(db, 'users', currentUser.uid);
+        // Get existing history items before updating
+        const historyItems = getHistoryItems();
+        
         await setDoc(userDoc, {
           items,
           receipts: getReceipts(),
+          historyItems: historyItems, // Preserve history items
           monthlyBudget: localStorage.getItem('monthlyBudget') || '0',
           lastUpdated: Date.now()
-        });
+        }, { merge: true }); // Add merge: true to preserve existing data
       } catch (error) {
         console.error('Error syncing data:', error);
         await showCustomDialog('Error syncing data. Please try again.', 'alert');
@@ -656,6 +660,7 @@ function init() {
     }
     
     displayItems();
+    displayHistoryItems(); // Add this to refresh history items
     updateTotalAmount();
   }
 
@@ -736,12 +741,16 @@ function init() {
     if (currentUser) {
       try {
         const userDoc = doc(db, 'users', currentUser.uid);
+        // Get existing history items before updating
+        const historyItems = getHistoryItems();
+        
         await setDoc(userDoc, {
           items,
           receipts: getReceipts(),
+          historyItems: historyItems, // Preserve history items
           monthlyBudget: localStorage.getItem('monthlyBudget') || '0',
           lastUpdated: Date.now()
-        });
+        }, { merge: true }); // Add merge: true to preserve existing data
       } catch (error) {
         console.error('Error syncing deletion:', error);
         await showCustomDialog('Error syncing deletion. Please try again.', 'alert');
@@ -749,6 +758,7 @@ function init() {
     }
     
     updateTotalAmount();
+    displayHistoryItems(); // Add this to refresh history items
   }
 
   function getItemsFromStorage() {
