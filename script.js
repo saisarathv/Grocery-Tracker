@@ -2657,25 +2657,11 @@ function init() {
     historyItems.forEach(item => {
         const li = document.createElement('li');
         
-        // Format expiry text properly
-        let expiryText = '';
-        if (item.expiry && item.expiry !== 'N/A') {
-            // Clean up any remaining prefixes just in case
-            const cleanExpiry = item.expiry
-                .replace(/^(Expiry: |Expires: |Expired: |Expired on: )+/gi, '')
-                .replace(/Expires: /gi, '')
-                .trim();
-            expiryText = `<span class="item-expiry">Expiry: ${cleanExpiry}</span>`;
-        } else {
-            expiryText = `<span class="item-expiry">Expiry: N/A</span>`;
-        }
-        
         li.innerHTML = `
             <div class="item-details">
                 <div class="item-name">${item.name}</div>
                 <div class="item-info">
                     <span class="item-quantity">${item.quantity} units</span>
-                    ${expiryText}
                     <span class="history-date">Moved on: ${new Date(item.movedDate).toLocaleDateString()}</span>
                 </div>
             </div>
