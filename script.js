@@ -2594,7 +2594,7 @@ function init() {
     });
   });
 
-  // Add these functions to handle data download
+  // Move these functions outside of init()
   function generateMonthlyReport() {
     const currentDate = new Date();
     const currentMonth = currentDate.getMonth();
@@ -2685,6 +2685,7 @@ function init() {
   }
 
   function downloadMonthlyReport() {
+    try {
     const csvContent = generateMonthlyReport();
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -2700,15 +2701,17 @@ function init() {
       link.click();
       document.body.removeChild(link);
     }
-  }
-
-  // Add this to your init function or event listeners section
-  document.getElementById('download-monthly-data').addEventListener('click', () => {
-    try {
-      downloadMonthlyReport();
     } catch (error) {
       console.error('Error downloading report:', error);
       showCustomDialog('Error generating report. Please try again.', 'alert');
+    }
+  }
+
+  // Add this with your other DOMContentLoaded event listeners
+  document.addEventListener('DOMContentLoaded', () => {
+    const downloadBtn = document.getElementById('download-monthly-data');
+    if (downloadBtn) {
+      downloadBtn.addEventListener('click', downloadMonthlyReport);
     }
   });
 }
