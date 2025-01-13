@@ -1908,6 +1908,7 @@ function init() {
         const data = docSnap.data();
         localStorage.setItem('items', JSON.stringify(data.items || []));
         localStorage.setItem('receipts', JSON.stringify(data.receipts || []));
+        localStorage.setItem('historyItems', JSON.stringify(data.historyItems || []));
         localStorage.setItem('monthlyBudget', data.monthlyBudget || '0');
       }
 
@@ -1921,15 +1922,18 @@ function init() {
           const data = doc.data();
           localStorage.setItem('items', JSON.stringify(data.items || []));
           localStorage.setItem('receipts', JSON.stringify(data.receipts || []));
+          localStorage.setItem('historyItems', JSON.stringify(data.historyItems || []));
           localStorage.setItem('monthlyBudget', data.monthlyBudget || '0');
           displayItems();
           displayReceipts();
+          displayHistoryItems();
           updateBudgetStats();
         }
       });
 
       displayItems();
       displayReceipts();
+      displayHistoryItems();
       updateBudgetStats();
 
     } catch (error) {
@@ -2496,8 +2500,8 @@ function init() {
     const wastedList = document.getElementById('wasted-list');
     
     // Clear existing lists
-    completedList.innerHTML = '';
-    wastedList.innerHTML = '';
+    if (completedList) completedList.innerHTML = '';
+    if (wastedList) wastedList.innerHTML = '';
     
     historyItems.forEach(item => {
       const li = document.createElement('li');
@@ -2517,21 +2521,45 @@ function init() {
         </div>
       `;
       
-      if (item.type === 'completed') {
+      if (item.type === 'completed' && completedList) {
         completedList.appendChild(li);
-      } else if (item.type === 'wasted') {
+      } else if (item.type === 'wasted' && wastedList) {
         wastedList.appendChild(li);
       }
     });
   }
 
-  // Update the init function to include history display
-  function init() {
-    // ... existing init code ...
-    
-    // Add this line to display history items on load
+  // Make removeHistoryItem globally accessible
+  window.removeHistoryItem = async function(itemName, type) {
+    const confirmed = await showCustomDialog('Are you sure you want to remove this item from history?');
+    if (confirmed) {
+      let historyItems = getHistoryItems();
+      historyItems = historyItems.filter(item => !(item.name === itemName && item.type === type));
+      localStorage.setItem('historyItems', JSON.stringify(historyItems));
+      
+      if (currentUser) {
+        try {
+          const userDoc = doc(db, 'users', currentUser.uid);
+          await setDoc(userDoc, {
+            items: getItemsFromStorage(),
+            receipts: getReceipts(),
+            historyItems: historyItems,
+            monthlyBudget: localStorage.getItem('monthlyBudget') || '0',
+            lastUpdated: Date.now()
+          });
+        } catch (error) {
+          console.error('Error syncing history deletion:', error);
+          await showCustomDialog('Error syncing history deletion. Please try again.', 'alert');
+        }
+      }
+      
+      displayHistoryItems();
+      checkUI();
+    }
+  };
+
+  // Add this line at the end of your script, outside of any function
+  document.addEventListener('DOMContentLoaded', () => {
     displayHistoryItems();
-    
-    // ... rest of init code ...
-  }
+  });
 }
