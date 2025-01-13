@@ -2557,24 +2557,14 @@ function init() {
   async function moveItemToHistory(item, historyType) {
     const itemName = item.querySelector('.item-name').textContent;
     const itemQuantity = parseInt(item.querySelector('.item-quantity').textContent);
+    const itemExpiry = item.querySelector('.item-expiry')?.textContent || '';
     
-    // Get expiry text and clean it up properly
-    let itemExpiry = item.querySelector('.item-expiry')?.textContent || '';
-    if (itemExpiry) {
-        // First, remove all variations of prefixes and clean up
-        itemExpiry = itemExpiry
-            .replace(/^(Expiry: |Expires: |Expired: |Expired on: )+/gi, '') // Remove all possible prefixes
-            .replace(/Expires: /gi, '')  // Remove any remaining "Expires: "
-            .replace(/\s+/g, ' ')        // Clean up extra spaces
-            .trim();
-    }
-    
-    // Create history item
+    // Create history item with timestamp
     const historyItem = {
         id: Date.now().toString(),
         name: itemName,
         quantity: itemQuantity,
-        expiry: itemExpiry || 'N/A',
+        expiry: itemExpiry,
         movedDate: new Date().toISOString(),
         type: historyType,
         timestamp: Date.now()
@@ -2655,22 +2645,21 @@ function init() {
     if (wastedList) wastedList.innerHTML = '';
     
     historyItems.forEach(item => {
-        const li = document.createElement('li');
-        
-        li.innerHTML = `
-            <div class="item-name">${item.name}</div>
-            <div class="item-quantity">${item.quantity} units</div>
-            <div class="move-date">Moved on: ${new Date(item.movedDate).toLocaleDateString()}</div>
-            <button class="remove-item" onclick="removeHistoryItem('${item.name}', '${item.type}')">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        `;
-        
-        if (item.type === 'completed' && completedList) {
-            completedList.appendChild(li);
-        } else if (item.type === 'wasted' && wastedList) {
-            wastedList.appendChild(li);
-        }
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <div class="item-details">
+          <div class="item-name">${item.name}</div>
+          <div class="item-info">
+            <span class="item-quantity">${item.quantity} units</span>
+          </div>
+        </div>
+      `;
+      
+      if (item.type === 'completed' && completedList) {
+        completedList.appendChild(li);
+      } else if (item.type === 'wasted' && wastedList) {
+        wastedList.appendChild(li);
+      }
     });
   }
 
