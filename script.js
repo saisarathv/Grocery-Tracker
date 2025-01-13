@@ -2561,8 +2561,11 @@ function init() {
     // Get expiry text and clean it up
     let itemExpiry = item.querySelector('.item-expiry')?.textContent || '';
     if (itemExpiry) {
-        // Remove any existing "Expiry:" or "Expires:" prefix
-        itemExpiry = itemExpiry.replace(/^(Expiry: |Expires: )+/i, '');
+        // Remove any existing "Expiry:" or "Expires:" prefix and clean up
+        itemExpiry = itemExpiry
+            .replace(/^(Expiry: |Expires: )+/i, '')  // Remove prefixes
+            .replace(/^Expires: /i, '')              // Remove any remaining "Expires: "
+            .trim();                                 // Clean up whitespace
     }
     
     // Create history item with timestamp
@@ -2656,7 +2659,12 @@ function init() {
         // Format expiry text properly
         let expiryText = '';
         if (item.expiry && item.expiry !== 'N/A') {
-            expiryText = `<span class="item-expiry">Expiry: ${item.expiry}</span>`;
+            // Make sure we're not adding duplicate prefixes
+            const cleanExpiry = item.expiry
+                .replace(/^(Expiry: |Expires: )+/i, '')  // Remove any existing prefixes
+                .replace(/^Expires: /i, '')              // Remove any remaining "Expires: "
+                .trim();                                 // Clean up whitespace
+            expiryText = `<span class="item-expiry">Expiry: ${cleanExpiry}</span>`;
         }
         
         li.innerHTML = `
