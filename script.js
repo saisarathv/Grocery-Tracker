@@ -2558,22 +2558,22 @@ function init() {
     const itemName = item.querySelector('.item-name').textContent;
     const itemQuantity = parseInt(item.querySelector('.item-quantity').textContent);
     
-    // Get expiry text and clean it up
+    // Get expiry text and clean it up properly
     let itemExpiry = item.querySelector('.item-expiry')?.textContent || '';
     if (itemExpiry) {
-        // Remove any existing "Expiry:" or "Expires:" prefix and clean up
+        // Remove any existing prefixes and clean up the date
         itemExpiry = itemExpiry
-            .replace(/^(Expiry: |Expires: )+/i, '')  // Remove prefixes
-            .replace(/^Expires: /i, '')              // Remove any remaining "Expires: "
-            .trim();                                 // Clean up whitespace
+            .replace(/^(Expiry: |Expires: )+/gi, '')  // Remove any prefix
+            .replace(/^Expired on: /i, '')            // Remove "Expired on: "
+            .trim();                                  // Clean up whitespace
     }
     
-    // Create history item with timestamp
+    // Create history item
     const historyItem = {
         id: Date.now().toString(),
         name: itemName,
         quantity: itemQuantity,
-        expiry: itemExpiry, // Store clean expiry date
+        expiry: itemExpiry || 'N/A',
         movedDate: new Date().toISOString(),
         type: historyType,
         timestamp: Date.now()
@@ -2656,15 +2656,12 @@ function init() {
     historyItems.forEach(item => {
         const li = document.createElement('li');
         
-        // Format expiry text properly - completely strip all prefixes first
+        // Format expiry text properly
         let expiryText = '';
         if (item.expiry && item.expiry !== 'N/A') {
-            const cleanExpiry = item.expiry
-                .replace(/^(Expiry: |Expires: )+/i, '')  // Remove any prefixes
-                .replace(/January|February|March|April|May|June|July|August|September|October|November|December/i, match => match)  // Keep month names
-                .replace(/\s+/g, ' ')  // Clean up extra spaces
-                .trim();
-            expiryText = `<span class="item-expiry">Expiry: ${cleanExpiry}</span>`;
+            expiryText = `<span class="item-expiry">Expiry: ${item.expiry}</span>`;
+        } else {
+            expiryText = `<span class="item-expiry">Expiry: N/A</span>`;
         }
         
         li.innerHTML = `

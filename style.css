@@ -303,6 +303,8 @@ header h1 {
     .history-date {
         font-size: 0.85rem;
         padding: 3px 10px;
+        width: auto;
+        max-width: 100%;
     }
 }
 
