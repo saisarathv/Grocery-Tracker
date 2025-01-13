@@ -2,6 +2,158 @@ import { auth, provider, db } from './firebase-config.js';
 import { signInWithPopup, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 import { doc, setDoc, getDoc, onSnapshot, collection, enableIndexedDbPersistence, runTransaction } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
+// Add these functions at the very top of your script.js file, before any other code
+function getItemsFromStorage() {
+  return localStorage.getItem('items') ? JSON.parse(localStorage.getItem('items')) : [];
+}
+
+function getHistoryItems() {
+  return localStorage.getItem('historyItems') ? JSON.parse(localStorage.getItem('historyItems')) : [];
+}
+
+function getReceipts() {
+  return localStorage.getItem('receipts') ? JSON.parse(localStorage.getItem('receipts')) : [];
+}
+
+function getCurrencySymbol(currency) {
+  const symbols = {
+    USD: '$',
+    EUR: '€',
+    GBP: '£',
+    INR: '₹',
+    JPY: '¥',
+    AUD: 'A$',
+    CAD: 'C$'
+  };
+  return symbols[currency] || currency;
+}
+
+// Move these functions outside of init()
+window.generateMonthlyReport = function() {
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth();
+  const currentYear = currentDate.getFullYear();
+  
+  // Get all data
+  const items = getItemsFromStorage();
+  const historyItems = getHistoryItems();
+  const receipts = getReceipts();
+  
+  // Filter for current month
+  const monthlyData = {
+    current: items.filter(item => item.status === 'current'),
+    shopping: items.filter(item => item.status === 'need'),
+    completed: historyItems.filter(item => {
+      const itemDate = new Date(item.movedDate);
+      return item.type === 'completed' && 
+             itemDate.getMonth() === currentMonth && 
+             itemDate.getFullYear() === currentYear;
+    }),
+    wasted: historyItems.filter(item => {
+      const itemDate = new Date(item.movedDate);
+      return item.type === 'wasted' && 
+             itemDate.getMonth() === currentMonth && 
+             itemDate.getFullYear() === currentYear;
+    }),
+    receipts: receipts.filter(receipt => {
+      const receiptDate = new Date(receipt.date);
+      return receiptDate.getMonth() === currentMonth && 
+             receiptDate.getFullYear() === currentYear;
+    })
+  };
+  
+  // Get budget information
+  const budget = parseFloat(localStorage.getItem('monthlyBudget')) || 0;
+  const currency = localStorage.getItem('selectedCurrency') || 'USD';
+  const currencySymbol = getCurrencySymbol(currency);
+  
+  // Generate CSV content
+  let csvContent = '\ufeff'; // Add BOM for Excel compatibility
+  csvContent += 'Smart Grocery Manager - Monthly Report\n';
+  csvContent += `Month: ${currentDate.toLocaleString('default', { month: 'long' })} ${currentYear}\n\n`;
+  csvContent += `Monthly Budget: ${currencySymbol}${budget.toFixed(2)}\n\n`;
+  
+  // Current Items
+  csvContent += 'CURRENT ITEMS IN STOCK\n';
+  csvContent += 'Name,Quantity,Expiry Date,Status\n';
+  monthlyData.current.forEach(item => {
+    csvContent += `"${item.name}",${item.quantity},"${item.expiry || 'N/A'}","In Stock"\n`;
+  });
+  
+  // Shopping List
+  csvContent += '\nSHOPPING LIST\n';
+  csvContent += 'Name,Quantity,Estimated Price,Total\n';
+  monthlyData.shopping.forEach(item => {
+    const total = item.isUnknownPrice ? 'Unknown' : `${currencySymbol}${(item.price * item.quantity).toFixed(2)}`;
+    csvContent += `"${item.name}",${item.quantity},"${item.isUnknownPrice ? 'Unknown' : `${currencySymbol}${item.price}`}","${total}"\n`;
+  });
+  
+  // Completed Items
+  csvContent += '\nCOMPLETED ITEMS\n';
+  csvContent += 'Name,Quantity,Date Completed\n';
+  monthlyData.completed.forEach(item => {
+    csvContent += `"${item.name}",${item.quantity},"${new Date(item.movedDate).toLocaleDateString()}"\n`;
+  });
+  
+  // Wasted Items
+  csvContent += '\nWASTED ITEMS\n';
+  csvContent += 'Name,Quantity,Date Wasted\n';
+  monthlyData.wasted.forEach(item => {
+    csvContent += `"${item.name}",${item.quantity},"${new Date(item.movedDate).toLocaleDateString()}"\n`;
+  });
+  
+  // Receipts
+  csvContent += '\nRECEIPTS\n';
+  csvContent += 'Description,Date,Amount\n';
+  monthlyData.receipts.forEach(receipt => {
+    csvContent += `"${receipt.name}","${new Date(receipt.date).toLocaleDateString()}","${currencySymbol}${receipt.amount}"\n`;
+  });
+  
+  // Summary
+  const totalSpent = monthlyData.receipts.reduce((sum, receipt) => sum + parseFloat(receipt.amount), 0);
+  csvContent += '\nMONTHLY SUMMARY\n';
+  csvContent += `Total Budget,${currencySymbol}${budget.toFixed(2)}\n`;
+  csvContent += `Total Spent,${currencySymbol}${totalSpent.toFixed(2)}\n`;
+  csvContent += `Remaining Budget,${currencySymbol}${(budget - totalSpent).toFixed(2)}\n`;
+  
+  return csvContent;
+};
+
+window.downloadMonthlyReport = function() {
+  try {
+    const csvContent = window.generateMonthlyReport();
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const currentDate = new Date();
+    const fileName = `grocery-report-${currentDate.toLocaleString('default', { month: 'long' })}-${currentDate.getFullYear()}.csv`;
+    
+    if (navigator.msSaveBlob) { // IE 10+
+      navigator.msSaveBlob(blob, fileName);
+    } else {
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  } catch (error) {
+    console.error('Error downloading report:', error);
+    if (window.showCustomDialog) {
+      window.showCustomDialog('Error generating report. Please try again.', 'alert');
+    } else {
+      alert('Error generating report. Please try again.');
+    }
+  }
+};
+
+// Add this at the top level of your script, outside any function
+document.addEventListener('DOMContentLoaded', function() {
+  const downloadBtn = document.getElementById('download-monthly-data');
+  if (downloadBtn) {
+    downloadBtn.addEventListener('click', window.downloadMonthlyReport);
+  }
+});
+
 document.addEventListener('DOMContentLoaded', init);
 
 function init() {
@@ -468,23 +620,6 @@ function init() {
     });
   }
 
-  function getCurrencySymbol(currency) {
-    const symbols = {
-      USD: '$',
-      EUR: '€',
-      GBP: '£',
-      INR: '₹',
-      JPY: '¥',
-      AUD: 'A$',
-      CAD: 'C$'
-    };
-    return symbols[currency] || currency;
-  }
-
-  function getReceipts() {
-    return JSON.parse(localStorage.getItem('receipts')) || [];
-  }
-
   function displayItems(sortMethod = 'alphabetical') {
     document.getElementById('current-list-with-expiry').innerHTML = '';
     document.getElementById('current-list-no-expiry').innerHTML = '';
@@ -759,10 +894,6 @@ function init() {
     
     updateTotalAmount();
     displayHistoryItems(); // Add this to refresh history items
-  }
-
-  function getItemsFromStorage() {
-    return localStorage.getItem('items') ? JSON.parse(localStorage.getItem('items')) : [];
   }
 
   function isDuplicateItem(name, status) {
@@ -2515,12 +2646,21 @@ function init() {
     
     historyItems.forEach(item => {
       const li = document.createElement('li');
+      
+      // Format expiry text properly
+      let expiryText = '';
+      if (item.expiry) {
+        // Remove duplicate "Expiry: Expires:" text
+        const cleanExpiry = item.expiry.replace(/^(Expiry: |Expires: )+/i, '');
+        expiryText = `<span class="item-expiry">Expiry: ${cleanExpiry}</span>`;
+      }
+      
       li.innerHTML = `
         <div class="item-details">
           <div class="item-name">${item.name}</div>
           <div class="item-info">
             <span class="item-quantity">${item.quantity} units</span>
-            ${item.expiry ? `<span class="item-expiry">Expiry: ${item.expiry}</span>` : ''}
+            ${expiryText}
             <span class="history-date">Moved on: ${new Date(item.movedDate).toLocaleDateString()}</span>
           </div>
         </div>
@@ -2607,131 +2747,4 @@ function init() {
     };
     return symbols[currency] || currency;
   }
-
-  // Global function to generate monthly report
-  window.generateMonthlyReport = function() {
-    const currentDate = new Date();
-    const currentMonth = currentDate.getMonth();
-    const currentYear = currentDate.getFullYear();
-    
-    // Get all data
-    const items = getItemsFromStorage();
-    const historyItems = getHistoryItems();
-    const receipts = getReceipts();
-    
-    // Filter for current month
-    const monthlyData = {
-      current: items.filter(item => item.status === 'current'),
-      shopping: items.filter(item => item.status === 'need'),
-      completed: historyItems.filter(item => {
-        const itemDate = new Date(item.movedDate);
-        return item.type === 'completed' && 
-               itemDate.getMonth() === currentMonth && 
-               itemDate.getFullYear() === currentYear;
-      }),
-      wasted: historyItems.filter(item => {
-        const itemDate = new Date(item.movedDate);
-        return item.type === 'wasted' && 
-               itemDate.getMonth() === currentMonth && 
-               itemDate.getFullYear() === currentYear;
-      }),
-      receipts: receipts.filter(receipt => {
-        const receiptDate = new Date(receipt.date);
-        return receiptDate.getMonth() === currentMonth && 
-               receiptDate.getFullYear() === currentYear;
-      })
-    };
-    
-    // Get budget information
-    const budget = parseFloat(localStorage.getItem('monthlyBudget')) || 0;
-    const currency = localStorage.getItem('selectedCurrency') || 'USD';
-    const currencySymbol = getCurrencySymbol(currency);
-    
-    // Generate CSV content
-    let csvContent = '\ufeff'; // Add BOM for Excel compatibility
-    csvContent += 'Smart Grocery Manager - Monthly Report\n';
-    csvContent += `Month: ${currentDate.toLocaleString('default', { month: 'long' })} ${currentYear}\n\n`;
-    csvContent += `Monthly Budget: ${currencySymbol}${budget.toFixed(2)}\n\n`;
-    
-    // Current Items
-    csvContent += 'CURRENT ITEMS IN STOCK\n';
-    csvContent += 'Name,Quantity,Expiry Date,Status\n';
-    monthlyData.current.forEach(item => {
-      csvContent += `"${item.name}",${item.quantity},"${item.expiry || 'N/A'}","In Stock"\n`;
-    });
-    
-    // Shopping List
-    csvContent += '\nSHOPPING LIST\n';
-    csvContent += 'Name,Quantity,Estimated Price,Total\n';
-    monthlyData.shopping.forEach(item => {
-      const total = item.isUnknownPrice ? 'Unknown' : `${currencySymbol}${(item.price * item.quantity).toFixed(2)}`;
-      csvContent += `"${item.name}",${item.quantity},"${item.isUnknownPrice ? 'Unknown' : `${currencySymbol}${item.price}`}","${total}"\n`;
-    });
-    
-    // Completed Items
-    csvContent += '\nCOMPLETED ITEMS\n';
-    csvContent += 'Name,Quantity,Date Completed\n';
-    monthlyData.completed.forEach(item => {
-      csvContent += `"${item.name}",${item.quantity},"${new Date(item.movedDate).toLocaleDateString()}"\n`;
-    });
-    
-    // Wasted Items
-    csvContent += '\nWASTED ITEMS\n';
-    csvContent += 'Name,Quantity,Date Wasted\n';
-    monthlyData.wasted.forEach(item => {
-      csvContent += `"${item.name}",${item.quantity},"${new Date(item.movedDate).toLocaleDateString()}"\n`;
-    });
-    
-    // Receipts
-    csvContent += '\nRECEIPTS\n';
-    csvContent += 'Description,Date,Amount\n';
-    monthlyData.receipts.forEach(receipt => {
-      csvContent += `"${receipt.name}","${new Date(receipt.date).toLocaleDateString()}","${currencySymbol}${receipt.amount}"\n`;
-    });
-    
-    // Summary
-    const totalSpent = monthlyData.receipts.reduce((sum, receipt) => sum + parseFloat(receipt.amount), 0);
-    csvContent += '\nMONTHLY SUMMARY\n';
-    csvContent += `Total Budget,${currencySymbol}${budget.toFixed(2)}\n`;
-    csvContent += `Total Spent,${currencySymbol}${totalSpent.toFixed(2)}\n`;
-    csvContent += `Remaining Budget,${currencySymbol}${(budget - totalSpent).toFixed(2)}\n`;
-    
-    return csvContent;
-  };
-
-  // Global function to download monthly report
-  window.downloadMonthlyReport = function() {
-    try {
-      const csvContent = window.generateMonthlyReport();
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      const currentDate = new Date();
-      const fileName = `grocery-report-${currentDate.toLocaleString('default', { month: 'long' })}-${currentDate.getFullYear()}.csv`;
-      
-      if (navigator.msSaveBlob) { // IE 10+
-        navigator.msSaveBlob(blob, fileName);
-      } else {
-        link.href = URL.createObjectURL(blob);
-        link.setAttribute('download', fileName);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-    } catch (error) {
-      console.error('Error downloading report:', error);
-      if (window.showCustomDialog) {
-        window.showCustomDialog('Error generating report. Please try again.', 'alert');
-      } else {
-        alert('Error generating report. Please try again.');
-      }
-    }
-  };
-
-  // Add event listener for the download button
-  document.addEventListener('DOMContentLoaded', function() {
-    const downloadBtn = document.getElementById('download-monthly-data');
-    if (downloadBtn) {
-      downloadBtn.addEventListener('click', window.downloadMonthlyReport);
-    }
-  });
 }
