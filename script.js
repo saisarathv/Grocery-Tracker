@@ -2656,14 +2656,14 @@ function init() {
     historyItems.forEach(item => {
         const li = document.createElement('li');
         
-        // Format expiry text properly
+        // Format expiry text properly - completely strip all prefixes first
         let expiryText = '';
         if (item.expiry && item.expiry !== 'N/A') {
-            // Make sure we're not adding duplicate prefixes
             const cleanExpiry = item.expiry
-                .replace(/^(Expiry: |Expires: )+/i, '')  // Remove any existing prefixes
-                .replace(/^Expires: /i, '')              // Remove any remaining "Expires: "
-                .trim();                                 // Clean up whitespace
+                .replace(/^(Expiry: |Expires: )+/i, '')  // Remove any prefixes
+                .replace(/January|February|March|April|May|June|July|August|September|October|November|December/i, match => match)  // Keep month names
+                .replace(/\s+/g, ' ')  // Clean up extra spaces
+                .trim();
             expiryText = `<span class="item-expiry">Expiry: ${cleanExpiry}</span>`;
         }
         

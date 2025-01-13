@@ -248,17 +248,62 @@ header h1 {
 .item-info {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
   align-items: center;
 }
 
 .item-quantity,
 .item-expiry,
-.item-price {
-  font-size: 0.9rem;
-  padding: 6px 12px;
-  border-radius: 15px;
-  white-space: nowrap;
+.history-date {
+    background: #f5f5f5;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    margin: 2px 0;
+}
+
+.item-expiry {
+    background: #fff3e0;
+    color: #666;
+}
+
+.history-date {
+    background: #e8eaf6;
+    color: #1a237e;
+}
+
+/* Dark mode support */
+.dark-mode .item-quantity,
+.dark-mode .item-expiry,
+.dark-mode .history-date {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .item-expiry {
+    background: rgba(255, 152, 0, 0.1);
+    color: #ffb74d;
+}
+
+.dark-mode .history-date {
+    background: rgba(26, 35, 126, 0.1);
+    color: #7986cb;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .item-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .item-quantity,
+    .item-expiry,
+    .history-date {
+        font-size: 0.85rem;
+        padding: 3px 10px;
+    }
 }
 
 .item-actions {
@@ -2341,7 +2386,7 @@ h2 {
 .item-info {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 10px;
     align-items: center;
 }
 
@@ -2390,7 +2435,7 @@ h2 {
 
     .item-quantity,
     .item-expiry,
-    .item-price {
+    .history-date {
         font-size: 0.85rem;
         padding: 4px 8px;
     }
