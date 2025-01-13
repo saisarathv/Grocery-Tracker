@@ -3758,7 +3758,7 @@ h2 {
 .history-item {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     padding: 15px;
     background: white;
     border-radius: 12px;
@@ -3786,12 +3786,12 @@ h2 {
     border-radius: 15px;
     font-size: 0.9rem;
     color: #1a237e;
-    align-self: flex-start;
 }
 
 .history-item .move-date {
     font-size: 0.9rem;
     color: #666;
+    margin-top: 4px;
 }
 
 .history-item .remove-item {
@@ -3842,22 +3842,38 @@ h2 {
         padding: 12px;
     }
 
+    .history-item .item-details {
+        gap: 6px;
+    }
+
+    /* Create a flex container for name and quantity */
+    .history-item .item-details > div:first-child {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
     .history-item .item-name {
         font-size: 1rem;
-        margin-bottom: 4px;
+        margin: 0;
     }
 
     .history-item .item-quantity {
         font-size: 0.85rem;
         padding: 3px 10px;
+        margin: 0;
     }
 
     .history-item .move-date {
         font-size: 0.85rem;
+        color: #666;
+        margin-top: 4px;
     }
 
     .history-item .remove-item {
         width: 28px;
         height: 28px;
+        padding: 0;
     }
 }

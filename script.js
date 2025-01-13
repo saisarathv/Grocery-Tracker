@@ -2656,12 +2656,14 @@ function init() {
     
     historyItems.forEach(item => {
         const li = document.createElement('li');
-        li.className = 'history-item'; // Add class for specific styling
+        li.className = 'history-item';
         
         li.innerHTML = `
             <div class="item-details">
-                <div class="item-name">${item.name}</div>
-                <span class="item-quantity">${item.quantity} units</span>
+                <div>
+                    <div class="item-name">${item.name}</div>
+                    <span class="item-quantity">${item.quantity} units</span>
+                </div>
                 <div class="move-date">Moved on: ${new Date(item.movedDate).toLocaleDateString()}</div>
             </div>
             <button class="remove-item btn-link text-red" onclick="removeHistoryItem('${item.name}', '${item.type}')">
