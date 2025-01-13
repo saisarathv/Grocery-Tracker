@@ -2558,8 +2558,29 @@ function init() {
     }
   };
 
-  // Add this line at the end of your script, outside of any function
+  // Add these event listeners outside of init()
   document.addEventListener('DOMContentLoaded', () => {
     displayHistoryItems();
+    
+    // Add click handlers for complete and waste buttons
+    document.addEventListener('click', async (e) => {
+      const target = e.target;
+      
+      // Handle complete button clicks
+      if (target.closest('.complete-item')) {
+        const listItem = target.closest('li');
+        if (listItem) {
+          await moveItemToHistory(listItem, 'completed');
+        }
+      }
+      
+      // Handle waste button clicks
+      if (target.closest('.waste-item')) {
+        const listItem = target.closest('li');
+        if (listItem) {
+          await moveItemToHistory(listItem, 'wasted');
+        }
+      }
+    });
   });
 }
