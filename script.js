@@ -2557,14 +2557,20 @@ function init() {
   async function moveItemToHistory(item, historyType) {
     const itemName = item.querySelector('.item-name').textContent;
     const itemQuantity = parseInt(item.querySelector('.item-quantity').textContent);
-    const itemExpiry = item.querySelector('.item-expiry')?.textContent || '';
+    
+    // Get expiry text and clean it up
+    let itemExpiry = item.querySelector('.item-expiry')?.textContent || '';
+    if (itemExpiry) {
+        // Remove any existing "Expiry:" or "Expires:" prefix
+        itemExpiry = itemExpiry.replace(/^(Expiry: |Expires: )+/i, '');
+    }
     
     // Create history item with timestamp
     const historyItem = {
         id: Date.now().toString(),
         name: itemName,
         quantity: itemQuantity,
-        expiry: itemExpiry,
+        expiry: itemExpiry, // Store clean expiry date
         movedDate: new Date().toISOString(),
         type: historyType,
         timestamp: Date.now()
@@ -2645,37 +2651,35 @@ function init() {
     if (wastedList) wastedList.innerHTML = '';
     
     historyItems.forEach(item => {
-      const li = document.createElement('li');
-      
-      // Format expiry text properly
-      let expiryText = '';
-      if (item.expiry) {
-        // Remove duplicate "Expiry: Expires:" text
-        const cleanExpiry = item.expiry.replace(/^(Expiry: |Expires: )+/i, '');
-        expiryText = `<span class="item-expiry">Expiry: ${cleanExpiry}</span>`;
-      }
-      
-      li.innerHTML = `
-        <div class="item-details">
-          <div class="item-name">${item.name}</div>
-          <div class="item-info">
-            <span class="item-quantity">${item.quantity} units</span>
-            ${expiryText}
-            <span class="history-date">Moved on: ${new Date(item.movedDate).toLocaleDateString()}</span>
-          </div>
-        </div>
-        <div class="item-actions">
-          <button class="remove-item btn-link text-red" onclick="removeHistoryItem('${item.name}', '${item.type}')">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </div>
-      `;
-      
-      if (item.type === 'completed' && completedList) {
-        completedList.appendChild(li);
-      } else if (item.type === 'wasted' && wastedList) {
-        wastedList.appendChild(li);
-      }
+        const li = document.createElement('li');
+        
+        // Format expiry text properly
+        let expiryText = '';
+        if (item.expiry && item.expiry !== 'N/A') {
+            expiryText = `<span class="item-expiry">Expiry: ${item.expiry}</span>`;
+        }
+        
+        li.innerHTML = `
+            <div class="item-details">
+                <div class="item-name">${item.name}</div>
+                <div class="item-info">
+                    <span class="item-quantity">${item.quantity} units</span>
+                    ${expiryText}
+                    <span class="history-date">Moved on: ${new Date(item.movedDate).toLocaleDateString()}</span>
+                </div>
+            </div>
+            <div class="item-actions">
+                <button class="remove-item btn-link text-red" onclick="removeHistoryItem('${item.name}', '${item.type}')">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        `;
+        
+        if (item.type === 'completed' && completedList) {
+            completedList.appendChild(li);
+        } else if (item.type === 'wasted' && wastedList) {
+            wastedList.appendChild(li);
+        }
     });
   }
 
